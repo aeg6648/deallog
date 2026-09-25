@@ -79,6 +79,7 @@ function normalize(p, source) {
     rocket: !!p.isRocket,
     category: p.categoryName || '',
     notes: Array.isArray(p.notes) ? p.notes : [],
+    until: p.until ? new Date(p.until).getTime() : null, // 딜 종료 시각 (수동 딜용)
     source,
   };
 }
@@ -240,7 +241,9 @@ async function collect(state) {
     return raw.map((p) => normalize(p, 'goldbox'));
   }
   // 수동 모드: manual.json 에 파트너스 링크로 직접 넣은 딜 (API 승인 전 단계에서 사용)
-  const manual = (await readJson(path.join(ROOT, 'manual.json'), [])).map((p) => normalize(p, 'manual'));
+  const manual = (await readJson(path.join(ROOT, 'manual.json'), []))
+    .map((p) => normalize(p, 'manual'))
+    .filter((p) => !p.until || p.until > now); // 끝난 딜은 수집하지 않음
   if (!env.CP_ACCESS_KEY || !env.CP_SECRET_KEY) {
     console.log('API 키 없음 -> 수동 모드 (manual.json)');
     return manual;
@@ -282,7 +285,12 @@ async function main() {
     feed.unshift(deal);
     posted++;
   }
-  const fresh = feed.filter((d) => now - d.postedAt <= 2 * DAY).slice(0, 60);
+  const untilById = Object.fromEntries((await readJson(path.join(ROOT, 'manual.json'), []))
+    .filter((p) => p.until).map((p) => [String(p.productId), new Date(p.until).getTime()]));
+  const fresh = feed.filter((d) => {
+    const until = d.until || untilById[d.id];
+    return now - d.postedAt <= 2 * DAY && (!until || until > now);
+  }).slice(0, 60);
 
   await writeJson(path.join(DATA, 'prices.json'), history);
   await writeJson(path.join(DATA, 'state.json'), state);
