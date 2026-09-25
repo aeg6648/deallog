@@ -30,6 +30,26 @@ docs/index.html              위 샘플로 만든 사이트 미리보기
 - 분유, 의료기기처럼 표시광고 리스크가 큰 품목은 자동 발송에서 제외
 - "최저가" 같은 절대 표현은 안 쓴다. 쿠팡 가이드가 과장 표현 자제를 권고하기 때문에 "추적 N일 중 최저"처럼 검증 가능한 문구만 쓴다.
 
+## 수동 모드 (API 승인 전)
+
+API 키가 없으면 `manual.json`만 읽는다. 파트너스 간편 링크로 만든 링크를 넣으면 다음 실행 때 텔레그램과 사이트에 올라간다.
+
+```json
+{"productId": 9046858036, "productName": "...", "productPrice": 15420, "originalPrice": 20900,
+ "productImage": "https://thumbnail...", "productUrl": "https://link.coupang.com/a/...",
+ "notes": ["쿠팡 골드박스 타임딜, 9/26(토) 오전 7시쯤 종료"], "until": "2026-09-26T07:00:00+09:00"}
+```
+
+`until`이 지나면 수집과 사이트 노출에서 자동으로 빠진다. API 키가 들어오면 수동 딜과 API 딜을 같이 처리한다.
+
+## 현재 연결 상태 (2026-09-25)
+
+- 저장소: github.com/aeg6648/deallog (Pages: aeg6648.github.io/deallog)
+- 텔레그램: t.me/deallog_kr, 봇 @deallog_alert_bot (게시/수정/삭제 권한만)
+- Secrets: `TG_BOT_TOKEN` / Variables: `TG_CHAT_ID`, `SITE_URL`
+- 쿠팡 파트너스 ID AF7930679, 활동 페이지 2곳 + 스크린샷 등록 완료
+- 남은 것: 누적 판매 15만 원 후 API 키를 `CP_ACCESS_KEY`, `CP_SECRET_KEY` Secrets로 추가
+
 ## 키 없이 테스트
 
 ```powershell
